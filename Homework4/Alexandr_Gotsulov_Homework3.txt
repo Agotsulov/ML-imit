@@ -1,0 +1,83 @@
+Дано множество объектов, характеризуемых одним (!) признаком. То есть объекты представляются точками на числовой прямой. Создать массив значений признаков объектов, и вместо таблиц работать с этим массивом. Нужно данные разбить на k кластеров, реализовав самостоятельно одну итерацию алгоритма k-means (нормировать данные не нужно).
+import numpy as np
+import math
+import random 
+
+size = 20
+max_n = 10
+
+n = np.random.randint(max_n, size=size)
+
+print("Вход")
+print(n)
+
+def get_random_clusters(max_n_, k):
+    return np.random.randint(max_n_, size=k)
+
+def kmeans(a, k, cluster_f):
+    result = [[] for i in range(0, k)]
+    
+    clusters = cluster_f(np.max(a), k)
+    
+    dis = np.array([10000 for i in range(0, np.size(a) * k)]).reshape(k, np.size(a))
+    
+    for i in range(0, np.size(clusters)):
+        for j in range(0, np.size(a)):
+            dis[i][j] = math.fabs(clusters[i] - a[j]) 
+            
+    for i in range(0, np.size(a)):
+        min_index = -1
+        for j in range(0, np.size(clusters)):
+            if dis[j][i] < dis[min_index][i]:
+                min_index = j
+        #print(min_index, end=" : ")
+        #print(a[i])
+        result[min_index].append(a[i])
+    
+    print("Центры кластеров")    
+    print(clusters)
+    return result
+    #print(result)
+    #print(clusters)
+    #print(dis)
+
+
+print("Кластеры")
+print(kmeans(n, 4, get_random_clusters))
+
+Запустить полученный выше алгоритм в цикле, пока кластеры не стабилизируются. На экран вывести пары: (значение признака, номер кластера). Совет: при тестировании алгоритма сгенерируйте три массива, значения которы принадлежат соответственно интервалам [0,1] [2,3] [4,5]. ОБъединим их в один массив - его и будем кластеризовать. И запустите разбиение данных на три кластера. Всегда ли алгоритм находит "естественное разбиение объектов на кластеры".
+
+size = 5
+
+n1 = np.random.randint(0, 10, size=size)
+n2 = np.random.randint(20, 30, size=size)
+n3 = np.random.randint(40, 50, size=size)
+
+n = n1
+n = np.append(n, n2)
+n = np.append(n, n3)
+
+
+def find_clusters(n):
+    print("Вход")
+    print(n)
+    result_old = np.array([])
+    print("Центры кластеров")
+    result = kmeans(n, 3, get_random_clusters)
+    while not np.array_equal(result,result_old):
+        result_old = result
+        result = kmeans(n, 3, get_random_clusters)
+    print("Кластеры")
+    return result
+    
+print(find_clusters(n))
+
+n = [6, 3, 9, 9, 3, 21, 21, 28, 25, 29, 43, 44, 42, 40, 46] #Пример что не всегда ли алгоритм находит естественное разбиение 
+
+print(find_clusters(n))
+    
+n = [6, 3, 9, 9, 3, 21, 21, 28, 25, 29, 43, 44, 42, 40, 46] #Пример что не всегда ли алгоритм находит естественное разбиение 
+
+print(find_clusters(n))
+
+    
