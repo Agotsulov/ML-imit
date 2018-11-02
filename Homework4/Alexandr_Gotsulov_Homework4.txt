@@ -1,0 +1,66 @@
+import pandas as pd
+import numpy as np
+from matplotlib import pyplot as plt
+import seaborn as sns
+import random
+df = pd.read_csv('girls.csv', sep=';')
+df.head()
+
+Сделайте более продвинутое разбиение на тестовую и тренировочную выборки. Зададим p=процент объектов, которые идут в тренировочную выборку (в тест пойдут другие 100-р процентов объектов). Сформируйте тренировочную выборку, состоящую из р процентов объектов исходной таблицы, выбранных случайно. Сформируйте тестовую таблицу, состоящую из оставшихся объектов.
+
+def split(df, p):
+    size = df.index.size 
+    #print(size)
+    all_index = np.arange(0, size, 1)
+    #print(all_index)
+    train_index = np.sort(np.array(random.sample(range(0, size), int(size * p))))
+    #print(train_index)
+    test_index = np.delete(all_index, train_index)
+    #print(test_index)
+    
+    #print(df.loc[train_index])
+    #print(df.loc[test_index])
+    
+    
+    return [df.loc[train_index], df.loc[test_index]] #Возвращяем тренировочную таблицу и тестовую таблицу
+    
+    
+split(df, 0.7)
+
+Напишите код, который корректно вычисляет МАРЕ. Дело в том, что при вычислении МАРЕ может произойти деление на 0 (это случается с объектами, у которых истинное значение целевого признака равно 0). Давайте поступим так: при вычислении МАРЕ будем игнорировать такие объекты (их в сумму не включать). Естественно, делить потом нужно не на объем всей выборки, а на число корректных объектов.
+
+#Возьмем тестовые
+test_df = split(df, 0.7)[1]
+#Сделаем некоректные 
+a = [['June', 2018, random.randint(test_df['G'].min(),test_df['G'].max()), random.randint(test_df['T'].min(),test_df['T'].max()), random.randint(test_df['B'].min(),test_df['B'].max()), random.randint(test_df['L'].min(),test_df['L'].max()), 0] for i in range(0, random.randint(5,10))]
+not_correct_test_df = pd.DataFrame(a, columns=['Month', 'Year', 'G', 'T', 'B', 'L', 'W'])
+#Добавим их
+test_df = test_df.append(not_correct_test_df, ignore_index=True)
+
+#Сгенерируем случайнуй столбик с предсказаными значениями
+test_df['W_pred'] = np.random.randint(test_df['W'].max(), size=test_df.shape[0])
+
+#print(random_predicted)
+
+test_df
+
+def MAPE(test, name_of_column, predicted):
+    n = 0
+    result = 0
+    
+    for i in range(0, test.shape[0]):
+        if test[name_of_column][i] != 0:
+            n += 1
+            result += abs(test[name_of_column][i] - predicted[i]) / abs(test[name_of_column][i])
+    
+    print(n)
+    #print(df.shape[0])
+    
+    return 100 * (result / n)
+   
+print(MAPE(test_df, 'W', random_predicted))
+
+
+
+
+#Так как n=182 то значит не включены обьекты ,которых истинное значение целевого признака равно 0
