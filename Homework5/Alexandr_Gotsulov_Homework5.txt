@@ -1,0 +1,124 @@
+# Домашка
+
+Загрузите датасет data_csv (данные о студнтах). Будем предсказывать пол по остальным признакам (выкиньте дату рождения) 
+
+1. Создайте список моделей МО [kNN, desicion_tree,линейный классификатор,метод опорных векторов, RandomForest(хотя я на занятии его не показывал)]
+2. Запустите В ЦИКЛЕ следующее: берем очередной классификатор из списка, строим по нему модель классификации, по тестовой выборке получаем значения precision и recall (запоминаем их значения)
+3. После цикла найдите модель с наилучшими показателями качества. 
+
+
+
+import pandas as pd
+import numpy as np
+from matplotlib import pyplot as plt
+import seaborn as sns
+from sklearn import linear_model
+from sklearn import model_selection
+from sklearn import neighbors
+from sklearn import ensemble
+from sklearn import tree
+from sklearn import svm 
+from sklearn import metrics
+%matplotlib inline
+df = pd.read_csv('data_csv.csv', sep=';', decimal=",") #Почему там в s* столбцах строки с ',' АААААА...
+df = df.drop("birth", axis=1)
+df.head()
+
+
+
+y = df['sex']
+
+
+
+X_train, X_test, y_train, y_test = model_selection.train_test_split(df.values.astype(np.float), y, \
+                                                                    test_size=0.35)
+
+
+
+
+MO_models = [neighbors.KNeighborsClassifier(n_neighbors=3), \
+             tree.DecisionTreeClassifier(max_depth=2), \
+             linear_model.SGDClassifier(), \
+             svm.SVC(gamma='auto',kernel='linear'), \
+             ensemble.RandomForestClassifier(n_jobs=5)]
+
+
+
+report = []
+
+
+
+for m in MO_models:
+    m.fit(X_train, y_train)
+    y_pred = m.predict(X_test)
+    print(m)
+    report.append(metrics.classification_report(y_test, y_pred))
+    print(metrics.classification_report(y_test, y_pred))
+
+
+1. Самый лучшый это DecisionTreeClassifier. Остальные в зависимости от test_size=0.35 при разбивании теряли точность.
+2. RandomForestClassifier при n_jobs=2 самый лучше результат. Там еще от рандома зависит. Я его не ставил random_state=10.
+3. У SVC огромный разброс. Иногда хорошо иногда почти 0. KNeighborsClassifier.
+4. SGDClassifier плохо.
+
+Результат:
+
+KNeighborsClassifier(algorithm='auto', leaf_size=30, metric='minkowski',
+           metric_params=None, n_jobs=1, n_neighbors=3, p=2,
+           weights='uniform')
+             precision    recall  f1-score   support
+
+          0       0.90      0.82      0.86        11
+          1       0.82      0.90      0.86        10
+
+avg / total       0.86      0.86      0.86        21
+
+DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=2,
+            max_features=None, max_leaf_nodes=None,
+            min_impurity_decrease=0.0, min_impurity_split=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, presort=False, random_state=None,
+            splitter='best')
+             precision    recall  f1-score   support
+
+          0       1.00      1.00      1.00        11
+          1       1.00      1.00      1.00        10
+
+avg / total       1.00      1.00      1.00        21
+
+SGDClassifier(alpha=0.0001, average=False, class_weight=None, epsilon=0.1,
+       eta0=0.0, fit_intercept=True, l1_ratio=0.15,
+       learning_rate='optimal', loss='hinge', max_iter=None, n_iter=None,
+       n_jobs=1, penalty='l2', power_t=0.5, random_state=None,
+       shuffle=True, tol=None, verbose=0, warm_start=False)
+             precision    recall  f1-score   support
+
+          0       0.00      0.00      0.00        11
+          1       0.48      1.00      0.65        10
+
+avg / total       0.23      0.48      0.31        21
+
+SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape='ovr', degree=3, gamma='auto', kernel='linear',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False)
+             precision    recall  f1-score   support
+
+          0       0.77      0.91      0.83        11
+          1       0.88      0.70      0.78        10
+
+avg / total       0.82      0.81      0.81        21
+
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_impurity_decrease=0.0, min_impurity_split=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=5,
+            oob_score=False, random_state=None, verbose=0,
+            warm_start=False)
+             precision    recall  f1-score   support
+
+          0       0.79      1.00      0.88        11
+          1       1.00      0.70      0.82        10
+
+avg / total       0.89      0.86      0.85        21
